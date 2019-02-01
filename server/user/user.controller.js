@@ -1,3 +1,5 @@
+const httpStatus = require('http-status');
+const APIError = require('../helpers/APIError');
 const User = require('./user.model');
 
 /**
@@ -28,13 +30,16 @@ function get(req, res) {
  */
 function create(req, res, next) {
   const user = new User({
-    username: req.body.username,
-    mobileNumber: req.body.mobileNumber
+    email: req.body.user.email
   });
-
-  user.save()
-    .then(savedUser => res.json(savedUser))
-    .catch(e => next(e));
+  user.setPassword(req.body.user.password)
+    .then(() => {
+      user.save()
+        .then(savedUser => res.json({ user: savedUser.toAuthJSON() }))
+        .catch((e) => {
+          next(handleMongooseError(e));
+        });
+    });
 }
 
 /**
@@ -45,9 +50,10 @@ function create(req, res, next) {
  */
 function update(req, res, next) {
   const user = req.user;
-  user.username = req.body.username;
-  user.mobileNumber = req.body.mobileNumber;
-
+  user.email = req.body.email;
+  if (req.body.password) {
+    user.setPassword(req.body.password);
+  }
   user.save()
     .then(savedUser => res.json(savedUser))
     .catch(e => next(e));
@@ -78,3 +84,20 @@ function remove(req, res, next) {
 }
 
 module.exports = { load, get, create, update, list, remove };
+
+/**
+ * Handle Mongoose Error
+ * @param err
+ * @returns {*}
+ */
+function handleMongooseError(err) {
+  let error;
+
+  if (err.code === 11000) {
+    error = new APIError('email already used', httpStatus.BAD_REQUEST, true);
+  }
+  else {
+    error = err;
+  }
+  return (error);
+}

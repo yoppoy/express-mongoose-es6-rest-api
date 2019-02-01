@@ -21,7 +21,9 @@ const envVarsSchema = Joi.object({
   MONGO_HOST: Joi.string().required()
     .description('Mongo DB host url'),
   MONGO_PORT: Joi.number()
-    .default(27017)
+    .default(27017),
+  SESSION_SECRET: Joi.string().required()
+    .description('SESSION Secret required to sign'),
 }).unknown()
   .required();
 
@@ -35,6 +37,7 @@ const config = {
   port: envVars.PORT,
   mongooseDebug: envVars.MONGOOSE_DEBUG,
   jwtSecret: envVars.JWT_SECRET,
+  sessionSecret: envVars.SESSION_SECRET,
   mongo: {
     host: envVars.MONGO_HOST,
     port: envVars.MONGO_PORT

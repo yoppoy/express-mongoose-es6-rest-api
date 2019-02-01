@@ -271,9 +271,9 @@ base64url@2.0.0, base64url@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/base64url/-/base64url-2.0.0.tgz#eac16e03ea1438eff9423d69baa36262ed1f70bb"
 
-basic-auth@~2.0.0:
+basic-authHelper@~2.0.0:
   version "2.0.0"
-  resolved "https://registry.yarnpkg.com/basic-auth/-/basic-auth-2.0.0.tgz#015db3f353e02e56377755f962742e8981e7bbba"
+  resolved "https://registry.yarnpkg.com/basic-authHelper/-/basic-authHelper-2.0.0.tgz#015db3f353e02e56377755f962742e8981e7bbba"
   dependencies:
     safe-buffer "5.1.1"
 
@@ -2361,7 +2361,7 @@ morgan@1.9.0:
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/morgan/-/morgan-1.9.0.tgz#d01fa6c65859b76fcf31b3cb53a3821a311d8051"
   dependencies:
-    basic-auth "~2.0.0"
+    basic-authHelper "~2.0.0"
     debug "2.6.9"
     depd "~1.1.1"
     on-finished "~2.3.0"

@@ -20,7 +20,7 @@ after((done) => {
 
 describe('## User APIs', () => {
   let user = {
-    username: 'KK123',
+    email: 'KK123',
     mobileNumber: '1234567890'
   };
 
@@ -31,7 +31,7 @@ describe('## User APIs', () => {
         .send(user)
         .expect(httpStatus.OK)
         .then((res) => {
-          expect(res.body.username).to.equal(user.username);
+          expect(res.body.email).to.equal(user.email);
           expect(res.body.mobileNumber).to.equal(user.mobileNumber);
           user = res.body;
           done();
@@ -46,7 +46,7 @@ describe('## User APIs', () => {
         .get(`/api/users/${user._id}`)
         .expect(httpStatus.OK)
         .then((res) => {
-          expect(res.body.username).to.equal(user.username);
+          expect(res.body.email).to.equal(user.email);
           expect(res.body.mobileNumber).to.equal(user.mobileNumber);
           done();
         })
@@ -67,13 +67,13 @@ describe('## User APIs', () => {
 
   describe('# PUT /api/users/:userId', () => {
     it('should update user details', (done) => {
-      user.username = 'KK';
+      user.email = 'KK';
       request(app)
         .put(`/api/users/${user._id}`)
         .send(user)
         .expect(httpStatus.OK)
         .then((res) => {
-          expect(res.body.username).to.equal('KK');
+          expect(res.body.email).to.equal('KK');
           expect(res.body.mobileNumber).to.equal(user.mobileNumber);
           done();
         })
@@ -112,7 +112,7 @@ describe('## User APIs', () => {
         .delete(`/api/users/${user._id}`)
         .expect(httpStatus.OK)
         .then((res) => {
-          expect(res.body.username).to.equal('KK');
+          expect(res.body.email).to.equal('KK');
           expect(res.body.mobileNumber).to.equal(user.mobileNumber);
           done();
         })

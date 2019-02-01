@@ -45,7 +45,7 @@ describe('## Misc', () => {
         .catch(done);
     });
 
-    it('should handle express validation error - username is required', (done) => {
+    it('should handle express validation error - email is required', (done) => {
       request(app)
         .post('/api/users')
         .send({
@@ -53,7 +53,7 @@ describe('## Misc', () => {
         })
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
-          expect(res.body.message).to.equal('"username" is required');
+          expect(res.body.message).to.equal('"email" is required');
           done();
         })
         .catch(done);

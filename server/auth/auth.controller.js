@@ -1,50 +1,47 @@
-const jwt = require('jsonwebtoken');
 const httpStatus = require('http-status');
 const APIError = require('../helpers/APIError');
-const config = require('../../config/config');
-
-// sample user, used for authentication
-const user = {
-  username: 'react',
-  password: 'express'
-};
+const passport = require('passport');
+const { objToString } = require('../helpers/utils');
 
 /**
- * Returns jwt token if valid username and password is provided
+ * Login user
  * @param req
  * @param res
  * @param next
  * @returns {*}
  */
 function login(req, res, next) {
-  // Ideally you'll fetch this from the db
-  // Idea here was to show how jwt works with simplicity
-  if (req.body.username === user.username && req.body.password === user.password) {
-    const token = jwt.sign({
-      username: user.username
-    }, config.jwtSecret);
-    return res.json({
-      token,
-      username: user.username
-    });
-  }
+  return passport.authenticate('local', { session: false }, (err, passportUser, info) => {
+    if (err) {
+      return next(err);
+    }
 
-  const err = new APIError('Authentication error', httpStatus.UNAUTHORIZED, true);
-  return next(err);
+    if (passportUser) {
+      const user = passportUser;
+      user.token = passportUser.generateJWT();
+      return res.json({ user: user.toAuthJSON() });
+    }
+    const error = new APIError(objToString(info.errors), httpStatus.BAD_REQUEST, true);
+    return next(error);
+  })(req, res, next);
 }
 
 /**
- * This is a protected route. Will return random number only if jwt token is provided in header.
+ * Logout user
  * @param req
  * @param res
- * @returns {*}
+ * @param next
  */
-function getRandomNumber(req, res) {
-  // req.user is assigned by jwt middleware if valid token is provided
-  return res.json({
-    user: req.user,
-    num: Math.random() * 100
-  });
+function logout(req, res, next) {
+  if (req.session) {
+    req.session.destroy((err) => {
+      if (err) {
+        return next(err);
+      } else {
+        return res.redirect('/');
+      }
+    });
+  }
 }
 
-module.exports = { login, getRandomNumber };
+module.exports = { login, logout };

@@ -2,19 +2,22 @@ const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
 const APIError = require('../helpers/APIError');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const config = require('../../config/config');
 
 /**
  * User Schema
  */
 const UserSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true
-  },
-  mobileNumber: {
+  email: {
     type: String,
     required: true,
-    match: [/^[1-9][0-9]{9}$/, 'The value of path {PATH} ({VALUE}) is not a valid mobile number.']
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true,
   },
   createdAt: {
     type: Date,
@@ -33,6 +36,41 @@ const UserSchema = new mongoose.Schema({
  * Methods
  */
 UserSchema.method({
+  setPassword(password) {
+    return new Promise((resolve, reject) => {
+      (bcrypt.hash(password, 10, (err, hash) => {
+        if (err) {
+          reject(err);
+        }
+        this.password = hash;
+        resolve();
+      }));
+    });
+  },
+
+  validatePassword(password) {
+    return (bcrypt.compareSync(password, this.password));
+  },
+
+  generateJWT() {
+    const today = new Date();
+    const expirationDate = new Date(today);
+    expirationDate.setDate(today.getDate() + 60);
+    const jwtToken = jwt.sign({
+      email: this.email,
+      id: this._id,
+      exp: parseInt(expirationDate.getTime() / 1000, 10)
+    }, config.jwtSecret);
+    return (jwtToken);
+  },
+
+  toAuthJSON() {
+    return {
+      _id: this._id,
+      email: this.email,
+      token: this.generateJWT(),
+    };
+  }
 });
 
 /**
@@ -68,7 +106,7 @@ UserSchema.statics = {
       .skip(+skip)
       .limit(+limit)
       .exec();
-  }
+  },
 };
 
 /**
