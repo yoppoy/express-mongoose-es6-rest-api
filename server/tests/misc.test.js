@@ -3,6 +3,9 @@ const httpStatus = require('http-status');
 const chai = require('chai'); // eslint-disable-line import/newline-after-import
 const expect = chai.expect;
 const app = require('../../index');
+const mongoose = require('mongoose');
+const config = require('../../config/config');
+const jwt = require('jsonwebtoken');
 
 chai.config.includeStack = true;
 
@@ -13,7 +16,9 @@ describe('## Misc', () => {
         .get('/api/health-check')
         .expect(httpStatus.OK)
         .then((res) => {
-          expect(res.text).to.equal('OK');
+          expect(res.text)
+            .to
+            .equal('OK');
           done();
         })
         .catch(done);
@@ -26,7 +31,9 @@ describe('## Misc', () => {
         .get('/api/404')
         .expect(httpStatus.NOT_FOUND)
         .then((res) => {
-          expect(res.body.message).to.equal('Not Found');
+          expect(res.body.message)
+            .to
+            .equal('Not Found');
           done();
         })
         .catch(done);
@@ -39,7 +46,9 @@ describe('## Misc', () => {
         .get('/api/users/56z787zzz67fc')
         .expect(httpStatus.INTERNAL_SERVER_ERROR)
         .then((res) => {
-          expect(res.body.message).to.equal('Internal Server Error');
+          expect(res.body.message)
+            .to
+            .equal('Internal Server Error');
           done();
         })
         .catch(done);
@@ -49,11 +58,15 @@ describe('## Misc', () => {
       request(app)
         .post('/api/users')
         .send({
-          mobileNumber: '1234567890'
+          user: {
+            password: 'kj'
+          }
         })
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
-          expect(res.body.message).to.equal('"email" is required');
+          expect(res.body.message)
+            .to
+            .equal('"email" is required');
           done();
         })
         .catch(done);

@@ -14,10 +14,7 @@ module.exports = {
   // UPDATE /api/users/:userId
   updateUser: {
     body: {
-      email: Joi.string().regex(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/).required(),
-      username: Joi.string().required(),
-      mobileNumber: Joi.string().regex(/^[1-9][0-9]{9}$/).required(),
-      password: Joi.string().required()
+      email: Joi.string().email({ minDomainAtoms: 2 }).required()
     },
     params: {
       userId: Joi.string().hex().required()

@@ -3,6 +3,8 @@ const APIError = require('../helpers/APIError');
 const passport = require('passport');
 const { objToString } = require('../helpers/utils');
 
+
+
 /**
  * Login user
  * @param req
@@ -44,4 +46,18 @@ function logout(req, res, next) {
   }
 }
 
-module.exports = { login, logout };
+/**
+ * This is a protected route. Will return random number only if jwt token is provided in header.
+ * @param req
+ * @param res
+ * @returns {*}
+ */
+function getRandomNumber(req, res) {
+  // req.user is assigned by jwt middleware if valid token is provided
+  return res.json({
+    user: req.user,
+    num: Math.random() * 100
+  });
+}
+
+module.exports = { login, logout, getRandomNumber };

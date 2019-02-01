@@ -14,10 +14,10 @@ router.route('/')
 
 router.route('/:userId')
 /** GET /api/users/:userId - Get user */
-  .get(userCtrl.get)
+  .get(auth.required, userCtrl.get)
 
   /** PUT /api/users/:userId - Update user */
-  .put(validate(paramValidation.updateUser), userCtrl.update)
+  .put(auth.required, validate(paramValidation.updateUser), userCtrl.update)
 
   /** DELETE /api/users/:userId - Delete user */
   .delete(userCtrl.remove);
