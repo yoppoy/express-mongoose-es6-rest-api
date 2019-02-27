@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const APIError = require('../helpers/APIError');
 const User = require('./user.model');
+const role = require('../helpers/role');
 
 /**
  * Load user and append to req.
@@ -35,7 +36,7 @@ function create(req, res, next) {
   user.setPassword(req.body.user.password)
     .then(() => {
       user.save()
-        .then(savedUser => res.json({ user: savedUser.toAuthJSON() }))
+        .then(savedUser => res.json({ user: savedUser.toJSON() }))
         .catch((e) => {
           next(handleMongooseError(e));
         });
@@ -51,7 +52,6 @@ function create(req, res, next) {
 function update(req, res, next) {
   const user = req.user;
   user.email = req.body.email;
-console.log(user);
   user.save()
     .then(savedUser => res.json(savedUser))
     .catch(e => next(e));

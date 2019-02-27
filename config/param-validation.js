@@ -1,32 +1,48 @@
 const Joi = require('joi');
 
 module.exports = {
-  // POST /api/users
-  createUser: {
-    body: {
-      user: {
-        email: Joi.string().email({ minDomainAtoms: 2 }).required(),
-        password: Joi.string().required()
-      }
-    }
-  },
-
-  // UPDATE /api/users/:userId
-  updateUser: {
-    body: {
-      email: Joi.string().email({ minDomainAtoms: 2 }).required()
-    },
-    params: {
-      userId: Joi.string().hex().required()
-    }
-  },
-
-  // POST /api/auth/login
+  // LOGIN VALIDATION
   login: {
     body: {
       user: {
-        email: Joi.string().email({ minDomainAtoms: 2 }).required(),
-        password: Joi.string().required()
+        email: Joi.string()
+          .email({ minDomainAtoms: 2 })
+          .required(),
+        password: Joi.string()
+          .required()
+      }
+    }
+  },
+  // USER VALIDATION
+  createUser: {
+    body: {
+      user: {
+        email: Joi.string()
+          .email({ minDomainAtoms: 2 })
+          .required(),
+        password: Joi.string()
+          .required()
+      }
+    }
+  },
+  updateUser: {
+    body: {
+      email: Joi.string()
+        .email({ minDomainAtoms: 2 })
+        .required()
+    },
+    params: {
+      userId: Joi.string()
+        .hex()
+        .required()
+    }
+  },
+  // LOCKER VALIDATION
+  createLocker: {
+    body: {
+      locker: {
+        address: Joi.string().required(),
+        password: Joi.string().min(6).max(6).required()
       }
     }
   }

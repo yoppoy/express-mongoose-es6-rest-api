@@ -5,6 +5,7 @@ const APIError = require('../helpers/APIError');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../../config/config');
+const role = require('../helpers/role');
 
 /**
  * User Schema
@@ -19,10 +20,18 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  scope: {
+    type: String,
+    default: 'basic'
+  },
+  tokens: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
 });
 
 /**
@@ -55,19 +64,22 @@ UserSchema.method({
   generateJWT() {
     const today = new Date();
     const expirationDate = new Date(today);
-    expirationDate.setDate(today.getDate() + 60);
+    expirationDate.setDate(today.getDate() + config.sessionDuration);
     const jwtToken = jwt.sign({
-      email: this.email,
       id: this._id,
+      email: this.email,
+      scope: this.scope,
       exp: parseInt(expirationDate.getTime() / 1000, 10)
     }, config.jwtSecret);
     return (jwtToken);
   },
 
-  toAuthJSON() {
+  toJSON() {
     return {
       _id: this._id,
       email: this.email,
+      scope: this.scope,
+      tokens: this.tokens,
       token: this.generateJWT(),
     };
   }
