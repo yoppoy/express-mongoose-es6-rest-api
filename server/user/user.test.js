@@ -192,7 +192,7 @@ describe('User', () => {
       });
 
       request(app)
-        .post('/api/user/admin')
+        .post('/api/admin')
         .send(adminCred)
         .set('Authorization', `Bearer ${initialAdmin.generateJWT()}`)
         .expect(httpStatus.OK)

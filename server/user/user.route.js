@@ -12,13 +12,6 @@ router.route('/')
   /** POST /api/users - Create new user */
   .post(auth.optional, validate(paramValidation.createUser), userCtrl.create);
 
-router.route('/admin')
-/** GET /api/users - Get list of admins */
-  .get(auth.required, auth.scope.check('admin'), userCtrl.listAdmin)
-
-  /** POST /api/users - Create new admin */
-  .post(auth.required, auth.scope.check('admin'), validate(paramValidation.createUser), userCtrl.createAdmin);
-
 router.route('/:userId')
 /** GET /api/users/:userId - Get user */
   .get(auth.required, auth.personal(permissions.user.read), userCtrl.get)
