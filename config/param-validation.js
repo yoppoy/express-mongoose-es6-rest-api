@@ -4,25 +4,21 @@ module.exports = {
   // LOGIN VALIDATION
   login: {
     body: {
-      user: {
-        email: Joi.string()
-          .email({ minDomainAtoms: 2 })
-          .required(),
-        password: Joi.string()
-          .required()
-      }
+      email: Joi.string()
+        .email({ minDomainAtoms: 2 })
+        .required(),
+      password: Joi.string()
+        .required()
     }
   },
   // USER VALIDATION
   createUser: {
     body: {
-      user: {
-        email: Joi.string()
-          .email({ minDomainAtoms: 2 })
-          .required(),
-        password: Joi.string()
-          .required()
-      }
+      email: Joi.string()
+        .email({ minDomainAtoms: 2 })
+        .required(),
+      password: Joi.string()
+        .required()
     }
   },
   updateUser: {
@@ -41,8 +37,12 @@ module.exports = {
   createLocker: {
     body: {
       locker: {
-        address: Joi.string().required(),
-        password: Joi.string().min(6).max(6).required()
+        address: Joi.string()
+          .required(),
+        password: Joi.string()
+          .min(6)
+          .max(6)
+          .required()
       }
     }
   }

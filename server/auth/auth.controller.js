@@ -18,8 +18,7 @@ function login(req, res, next) {
     }
     if (passportUser) {
       const user = passportUser;
-      user.token = passportUser.generateJWT();
-      return res.json({ user });
+      return res.json({ user, token: passportUser.generateJWT() });
     }
     const error = new APIError(objToString(info.errors), httpStatus.BAD_REQUEST, true);
     return next(error);

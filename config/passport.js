@@ -4,8 +4,7 @@ const LocalStrategy = require('passport-local');
 const Users = mongoose.model('User');
 
 passport.use(new LocalStrategy({
-  usernameField: 'user[email]',
-  passwordField: 'user[password]',
+  usernameField: 'email',
 }, (email, password, next) => {
   Users.findOne({ email })
     .then((user) => {

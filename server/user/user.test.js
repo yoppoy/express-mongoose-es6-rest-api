@@ -25,28 +25,20 @@ after((done) => {
 
 describe('User', () => {
   const user1Cred = {
-    user: {
-      email: 'unit@testing.com',
-      password: 'express'
-    }
+    email: 'unit@testing.com',
+    password: 'express'
   };
   const user2Cred = {
-    user: {
-      email: 'unit2@testing.com',
-      password: 'express'
-    }
+    email: 'unit2@testing.com',
+    password: 'express'
   };
   const adminCred = {
-    user: {
-      email: 'unit@testing.com',
-      password: 'express'
-    }
+    email: 'unit@testing.com',
+    password: 'express'
   };
   const invalidUserCred = {
-    user: {
-      email: 'wrongtest.com',
-      password: 'wrong'
-    }
+    email: 'wrongtest.com',
+    password: 'wrong'
   };
   let user = {};
   let user2 = {};
@@ -58,11 +50,11 @@ describe('User', () => {
       .send(user1Cred)
       .expect(httpStatus.OK)
       .then((res) => {
-        expect(res.body.user.email).to.equal(user1Cred.user.email);
+        expect(res.body.user.email).to.equal(user1Cred.email);
         expect(res.body.token).to.not.equal(null);
         jwt.verify(res.body.token, config.jwtSecret, (err, decoded) => {
           expect(err).to.not.be.ok; // eslint-disable-line
-          expect(decoded.email).to.equal(user1Cred.user.email);
+          expect(decoded.email).to.equal(user1Cred.email);
           user = res.body.user;
           user.token = res.body.token;
           request(app).post('/api/user')
@@ -71,7 +63,7 @@ describe('User', () => {
             .then((res1) => {
               expect(res1.body.user.email)
                 .to
-                .equal(user2Cred.user.email);
+                .equal(user2Cred.email);
               expect(res1.body.token)
                 .to
                 .not
@@ -205,11 +197,11 @@ describe('User', () => {
         .set('Authorization', `Bearer ${initialAdmin.generateJWT()}`)
         .expect(httpStatus.OK)
         .then((res) => {
-          expect(res.body.user.email).to.equal(user1Cred.user.email);
+          expect(res.body.user.email).to.equal(user1Cred.email);
           expect(res.body.token).to.not.equal(null);
           jwt.verify(res.body.token, config.jwtSecret, (err, decoded) => {
             expect(err).to.not.be.ok; // eslint-disable-line
-            expect(decoded.email).to.equal(user1Cred.user.email);
+            expect(decoded.email).to.equal(user1Cred.email);
             admin = res.body.user;
             admin.token = res.body.token;
             done();

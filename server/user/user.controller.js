@@ -24,15 +24,14 @@ function get(req, res) {
 
 /**
  * Create new user
- * @property {string} req.body.username - The username of user.
- * @property {string} req.body.mobileNumber - The mobileNumber of user.
+ * @property {string} req.body.email - The username of user.
  * @returns {User}
  */
 function create(req, res, next) {
   const user = new User({
-    email: req.body.user.email
+    email: req.body.email
   });
-  user.setPassword(req.body.user.password)
+  user.setPassword(req.body.password)
     .then(() => {
       user.save()
         .then(savedUser => res.json({ user: savedUser.toJSON(), token: user.generateJWT() }))
@@ -44,16 +43,15 @@ function create(req, res, next) {
 
 /**
  * Create new user
- * @property {string} req.body.username - The username of user.
- * @property {string} req.body.mobileNumber - The mobileNumber of user.
+ * @property {string} req.body.email - The username of user.
  * @returns {User}
  */
 function createAdmin(req, res, next) {
   const user = new User({
-    email: req.body.user.email,
+    email: req.body.email,
     scope: 'admin'
   });
-  user.setPassword(req.body.user.password)
+  user.setPassword(req.body.password)
     .then(() => {
       user.save()
         .then(savedUser => res.json({ user: savedUser.toJSON(), token: user.generateJWT() }))
@@ -65,7 +63,7 @@ function createAdmin(req, res, next) {
 
 /**
  * Update existing user
- * @property {string} req.body.username - The username of user.
+ * @property {string} req.body.email - The username of user.
  * @property {string} req.body.mobileNumber - The mobileNumber of user.
  * @returns {User}
  */
