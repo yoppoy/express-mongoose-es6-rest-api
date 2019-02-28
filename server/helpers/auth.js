@@ -1,9 +1,21 @@
 const jwt = require('express-jwt');
-const APIError = require('../helpers/APIError');
-const httpStatus = require('http-status');
 const config = require('../../config/config');
-const permissions = require('express-jwt-permissions')();
-const role = require('./role');
+const scope = require('express-jwt-permissions')({
+  requestProperty: 'jwt',
+  permissionsProperty: 'scope'
+});
+
+/**
+ * Extra permissions grantable to user
+ * @type {{user: {read: string, modify: string, delete: string}}}
+ */
+const permissions = {
+  user: {
+    read: 'user:read',
+    modify: 'user:modify',
+    delete: 'user:delete',
+  }
+};
 
 /**
  * Will validate if :
@@ -13,13 +25,13 @@ const role = require('./role');
  * @param extraPermissions : custom permissions
  * @returns {Function}
  */
-const authPersonal = (...extraPermissions) => {
+const personal = (...extraPermissions) => {
   return (req, res, next) => {
     if (req.user._id.toString() === req.jwt.id) {
       next();
     }
     else {
-      permissions.check(['admin'], extraPermissions)(req, res, next);
+      scope.check(['admin'], extraPermissions)(req, res, next);
     }
   };
 };
@@ -37,6 +49,8 @@ const auth = {
     secret: config.jwtSecret,
     credentialsRequired: false,
   }),
+  personal,
+  scope
 };
 
-module.exports = { auth, authPersonal };
+module.exports = { auth, permissions };

@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const APIError = require('../helpers/APIError');
 const User = require('./user.model');
-const role = require('../helpers/role');
 
 /**
  * Load user and append to req.
@@ -36,7 +35,28 @@ function create(req, res, next) {
   user.setPassword(req.body.user.password)
     .then(() => {
       user.save()
-        .then(savedUser => res.json({ user: savedUser.toJSON() }))
+        .then(savedUser => res.json({ user: savedUser.toJSON(), token: user.generateJWT() }))
+        .catch((e) => {
+          next(handleMongooseError(e));
+        });
+    });
+}
+
+/**
+ * Create new user
+ * @property {string} req.body.username - The username of user.
+ * @property {string} req.body.mobileNumber - The mobileNumber of user.
+ * @returns {User}
+ */
+function createAdmin(req, res, next) {
+  const user = new User({
+    email: req.body.user.email,
+    scope: 'admin'
+  });
+  user.setPassword(req.body.user.password)
+    .then(() => {
+      user.save()
+        .then(savedUser => res.json({ user: savedUser.toJSON(), token: user.generateJWT() }))
         .catch((e) => {
           next(handleMongooseError(e));
         });
@@ -71,6 +91,19 @@ function list(req, res, next) {
 }
 
 /**
+ * Get admin list.
+ * @property {number} req.query.skip - Number of users to be skipped.
+ * @property {number} req.query.limit - Limit number of users to be returned.
+ * @returns {User[]}
+ */
+function listAdmin(req, res, next) {
+  const { limit = 50, skip = 0 } = req.query;
+  User.listAdmin({ limit, skip })
+    .then(users => res.json(users))
+    .catch(e => next(e));
+}
+
+/**
  * Delete user.
  * @returns {User}
  */
@@ -81,7 +114,7 @@ function remove(req, res, next) {
     .catch(e => next(e));
 }
 
-module.exports = { load, get, create, update, list, remove };
+module.exports = { load, get, create, update, list, remove, createAdmin, listAdmin };
 
 /**
  * Handle Mongoose Error

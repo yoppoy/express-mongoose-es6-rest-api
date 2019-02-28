@@ -5,7 +5,6 @@ const APIError = require('../helpers/APIError');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../../config/config');
-const role = require('../helpers/role');
 
 /**
  * User Schema
@@ -80,7 +79,6 @@ UserSchema.method({
       email: this.email,
       scope: this.scope,
       tokens: this.tokens,
-      token: this.generateJWT(),
     };
   }
 });
@@ -114,6 +112,14 @@ UserSchema.statics = {
    */
   list({ skip = 0, limit = 50 } = {}) {
     return this.find()
+      .sort({ createdAt: -1 })
+      .skip(+skip)
+      .limit(+limit)
+      .exec();
+  },
+
+  listAdmin({ skip = 0, limit = 50 } = {}) {
+    return this.find({ scope: { $regex: 'admin', $options: 'i' } })
       .sort({ createdAt: -1 })
       .skip(+skip)
       .limit(+limit)

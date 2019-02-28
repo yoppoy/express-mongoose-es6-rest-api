@@ -8,6 +8,7 @@ const app = require('../../index');
 const mongoose = require('mongoose');
 const config = require('../../config/config');
 const jwt = require('jsonwebtoken');
+const User = require('./user.model');
 
 chai.config.includeStack = true;
 
@@ -17,55 +18,66 @@ chai.config.includeStack = true;
 after((done) => {
   mongoose.models = {};
   mongoose.modelSchemas = {};
+  mongoose.connection.db.dropDatabase();
   mongoose.connection.close();
   done();
 });
 
-describe('## User with Authentication APIs', () => {
-  const userCredentials = {
+describe('User', () => {
+  const user1Cred = {
     user: {
       email: 'unit@testing.com',
       password: 'express'
     }
   };
-
-  const user2Credentials = {
+  const user2Cred = {
     user: {
       email: 'unit2@testing.com',
       password: 'express'
     }
   };
-
-  const invalidUserCredentials = {
+  const adminCred = {
+    user: {
+      email: 'unit@testing.com',
+      password: 'express'
+    }
+  };
+  const invalidUserCred = {
     user: {
       email: 'wrongtest.com',
       password: 'wrong'
     }
   };
-
   let user = {};
   let user2 = {};
+  let admin = {};
 
   it('should create 2 new users with a valid token', (done) => {
     request(app)
       .post('/api/user')
-      .send(userCredentials)
+      .send(user1Cred)
       .expect(httpStatus.OK)
       .then((res) => {
-        expect(res.body.user.email).to.equal(userCredentials.user.email);
-        expect(res.body.user.Token).to.not.equal(null);
-        jwt.verify(res.body.user.token, config.jwtSecret, (err, decoded) => {
+        expect(res.body.user.email).to.equal(user1Cred.user.email);
+        expect(res.body.token).to.not.equal(null);
+        jwt.verify(res.body.token, config.jwtSecret, (err, decoded) => {
           expect(err).to.not.be.ok; // eslint-disable-line
-          expect(decoded.email).to.equal(userCredentials.user.email);
+          expect(decoded.email).to.equal(user1Cred.user.email);
           user = res.body.user;
-          request(app)
-            .post('/api/user')
-            .send(user2Credentials)
+          user.token = res.body.token;
+          request(app).post('/api/user')
+            .send(user2Cred)
             .expect(httpStatus.OK)
             .then((res1) => {
-              expect(res1.body.user.email).to.equal(user2Credentials.user.email);
-              expect(res1.body.user.Token).to.not.equal(null);
+              expect(res1.body.user.email)
+                .to
+                .equal(user2Cred.user.email);
+              expect(res1.body.token)
+                .to
+                .not
+                .equal(null);
               user2 = res1.body.user;
+              user2.token = res1.body.token;
               done();
             })
             .catch(done);
@@ -80,8 +92,12 @@ describe('## User with Authentication APIs', () => {
       .set('Authorization', `Bearer ${user.token}`)
       .expect(httpStatus.OK)
       .then((res) => {
-        expect(res.body.email).to.equal(user.email);
-        expect(res.body.mobileNumber).to.equal(user.mobileNumber);
+        expect(res.body.email)
+          .to
+          .equal(user.email);
+        expect(res.body.mobileNumber)
+          .to
+          .equal(user.mobileNumber);
         done();
       })
       .catch(done);
@@ -90,7 +106,7 @@ describe('## User with Authentication APIs', () => {
   it('should return Authentication error', (done) => {
     request(app)
       .post('/api/login')
-      .send(invalidUserCredentials)
+      .send(invalidUserCred)
       .expect(httpStatus.BAD_REQUEST)
       .then((res) => {
         expect(res.body.message)
@@ -107,29 +123,37 @@ describe('## User with Authentication APIs', () => {
       .set('Authorization', `Bearer ${user.token}`)
       .expect(httpStatus.NOT_FOUND)
       .then((res) => {
-        expect(res.body.message).to.equal('Not Found');
+        expect(res.body.message)
+          .to
+          .equal('Not Found');
         done();
       })
       .catch(done);
   });
 
-  it('should return Forbidden : GET / PUT / DELETE', (done) => {
+  it('should return Forbidden for normal user : GET / PUT / DELETE', (done) => {
     request(app)
       .get(`/api/user/${user2._id}`)
       .set('Authorization', `Bearer ${user.token}`)
       .then((res1) => {
-        expect(res1.body.message).to.equal('Forbidden');
+        expect(res1.body.message)
+          .to
+          .equal('Forbidden');
         request(app)
           .put(`/api/user/${user2._id}`)
           .set('Authorization', `Bearer ${user.token}`)
-          .send(user2Credentials)
+          .send(user2Cred)
           .then((res2) => {
-            expect(res2.body.message).to.equal('Forbidden');
+            expect(res2.body.message)
+              .to
+              .equal('Forbidden');
             request(app)
               .delete(`/api/user/${user2._id}`)
               .set('Authorization', `Bearer ${user.token}`)
               .then((res3) => {
-                expect(res3.body.message).to.equal('Forbidden');
+                expect(res3.body.message)
+                  .to
+                  .equal('Forbidden');
                 done();
               });
           })
@@ -146,57 +170,91 @@ describe('## User with Authentication APIs', () => {
       .send(user)
       .expect(httpStatus.OK)
       .then((res) => {
-        expect(res.body.email).to.equal('unit-update@testing.com');
+        expect(res.body.email)
+          .to
+          .equal('unit-update@testing.com');
         done();
       })
       .catch(done);
   });
 
-  it('should delete user 1 and user 2', (done) => {
+  it('should delete user 1', (done) => {
     request(app)
       .delete(`/api/user/${user._id}`)
       .set('Authorization', `Bearer ${user.token}`)
       .expect(httpStatus.OK)
       .then((res) => {
-        expect(res.body.email).to.equal(user.email);
-        request(app)
-          .delete(`/api/user/${user2._id}`)
-          .set('Authorization', `Bearer ${user2.token}`)
-          .expect(httpStatus.OK)
-          .then((res2) => {
-            expect(res2.body.email).to.equal(user2.email);
+        expect(res.body.email)
+          .to
+          .equal(user.email);
+        done();
+      })
+      .catch(done);
+  });
+
+  describe('Admin', () => {
+    it('should create an admin', (done) => {
+      const initialAdmin = new User({
+        email: 'admin@test.gmail',
+        scope: 'admin'
+      });
+
+      request(app)
+        .post('/api/user/admin')
+        .send(adminCred)
+        .set('Authorization', `Bearer ${initialAdmin.generateJWT()}`)
+        .expect(httpStatus.OK)
+        .then((res) => {
+          expect(res.body.user.email).to.equal(user1Cred.user.email);
+          expect(res.body.token).to.not.equal(null);
+          jwt.verify(res.body.token, config.jwtSecret, (err, decoded) => {
+            expect(err).to.not.be.ok; // eslint-disable-line
+            expect(decoded.email).to.equal(user1Cred.user.email);
+            admin = res.body.user;
+            admin.token = res.body.token;
             done();
           });
-      })
-      .catch(done);
+        })
+        .catch(done);
+    });
+
+    it('should get all users', (done) => {
+      request(app)
+        .get('/api/user')
+        .set('Authorization', `Bearer ${admin.token}`)
+        .expect(httpStatus.OK)
+        .then((res) => {
+          expect(res.body).to.be.an('array');
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should get all users (with limit and skip)', (done) => {
+      request(app)
+        .get('/api/user')
+        .set('Authorization', `Bearer ${admin.token}`)
+        .query({ limit: 10, skip: 1 })
+        .expect(httpStatus.OK)
+        .then((res) => {
+          expect(res.body).to.be.an('array');
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should delete user 2', (done) => {
+      request(app)
+        .delete(`/api/user/${user2._id}`)
+        .set('Authorization', `Bearer ${admin.token}`)
+        .expect(httpStatus.OK)
+        .then((res) => {
+          expect(res.body.email)
+            .to
+            .equal(user2.email);
+          done();
+        })
+        .catch(done);
+    });
   });
 });
-
-/*
-describe('# GET /api/user/', () => {
-  it('should get all users', (done) => {
-    request(app)
-      .get('/api/user')
-      .set('Authorization', `Bearer ${user.token}`)
-      .expect(httpStatus.OK)
-      .then((res) => {
-        expect(res.body).to.be.an('array');
-        done();
-      })
-      .catch(done);
-  });
-
-  it('should get all users (with limit and skip)', (done) => {
-    request(app)
-      .get('/api/user')
-      .set('Authorization', `Bearer ${user.token}`)
-      .query({ limit: 10, skip: 1 })
-      .expect(httpStatus.OK)
-      .then((res) => {
-        expect(res.body).to.be.an('array');
-        done();
-      })
-      .catch(done);
-  });
-});
- */
