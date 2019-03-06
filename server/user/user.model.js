@@ -44,6 +44,7 @@ const UserSchema = new mongoose.Schema({
  * Methods
  */
 UserSchema.method({
+  /* Auth */
   setPassword(password) {
     return new Promise((resolve, reject) => {
       (bcrypt.hash(password, 10, (err, hash) => {
@@ -55,11 +56,9 @@ UserSchema.method({
       }));
     });
   },
-
   validatePassword(password) {
     return (bcrypt.compareSync(password, this.password));
   },
-
   generateJWT() {
     const today = new Date();
     const expirationDate = new Date(today);
@@ -72,7 +71,6 @@ UserSchema.method({
     }, config.jwtSecret);
     return (jwtToken);
   },
-
   toJSON() {
     return {
       _id: this._id,
@@ -80,6 +78,15 @@ UserSchema.method({
       scope: this.scope,
       tokens: this.tokens,
     };
+  },
+  /**/
+  pay(quantity) {
+    if (this.tokens >= quantity) {
+      this.tokens = this.tokens - quantity;
+      return (this.tokens);
+    }
+    else
+      return (-1);
   }
 });
 

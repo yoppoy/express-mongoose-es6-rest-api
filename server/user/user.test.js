@@ -128,9 +128,7 @@ describe('User', () => {
       .get(`/api/user/${user2._id}`)
       .set('Authorization', `Bearer ${user.token}`)
       .then((res1) => {
-        expect(res1.body.message)
-          .to
-          .equal('Forbidden');
+        expect(res1.body.message).to.equal('Forbidden');
         request(app)
           .put(`/api/user/${user2._id}`)
           .set('Authorization', `Bearer ${user.token}`)
