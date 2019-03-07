@@ -42,26 +42,6 @@ function create(req, res, next) {
 }
 
 /**
- * Create new user
- * @property {string} req.body.email - The username of user.
- * @returns {User}
- */
-function createAdmin(req, res, next) {
-  const user = new User({
-    email: req.body.email,
-    scope: 'admin'
-  });
-  user.setPassword(req.body.password)
-    .then(() => {
-      user.save()
-        .then(savedUser => res.json({ user: savedUser.toJSON(), token: user.generateJWT() }))
-        .catch((e) => {
-          next(handleMongooseError(e));
-        });
-    });
-}
-
-/**
  * Update existing user
  * @property {string} req.body.email - The username of user.
  * @property {string} req.body.mobileNumber - The mobileNumber of user.
@@ -89,19 +69,6 @@ function list(req, res, next) {
 }
 
 /**
- * Get admin list.
- * @property {number} req.query.skip - Number of users to be skipped.
- * @property {number} req.query.limit - Limit number of users to be returned.
- * @returns {User[]}
- */
-function listAdmin(req, res, next) {
-  const { limit = 50, skip = 0 } = req.query;
-  User.listAdmin({ limit, skip })
-    .then(users => res.json(users))
-    .catch(e => next(e));
-}
-
-/**
  * Delete user.
  * @returns {User}
  */
@@ -112,7 +79,15 @@ function remove(req, res, next) {
     .catch(e => next(e));
 }
 
-module.exports = { load, get, create, update, list, remove, createAdmin, listAdmin };
+function purchaseTokens(req, res) {
+  User.get(req.jwt.id).then((user) => {
+    user.purchaseTokens(req.body.quantity).then((currentTokens) => {
+      res.json({tokens: currentTokens});
+    });
+  });
+}
+
+module.exports = { load, get, create, update, list, remove, purchaseTokens };
 
 /**
  * Handle Mongoose Error

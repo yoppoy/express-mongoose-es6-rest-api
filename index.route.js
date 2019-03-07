@@ -3,6 +3,7 @@ const authRoutes = require('./server/auth/auth.route');
 const userRoutes = require('./server/user/user.route');
 const adminRoutes = require('./server/admin/admin.route');
 const lockerRoutes = require('./server/locker/locker.route');
+const inventoryRoutes = require('./server/inventory/inventory.route');
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -17,6 +18,7 @@ router.use('', authRoutes);
 router.use('/user', userRoutes);
 router.use('/admin', adminRoutes);
 router.use('/locker', lockerRoutes);
+router.use('/inventory', inventoryRoutes);
 
 
 module.exports = router;

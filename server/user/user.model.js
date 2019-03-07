@@ -23,6 +23,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'basic'
   },
+  cylinders: {
+    type: [String]
+  },
   tokens: {
     type: Number,
     default: 0
@@ -79,14 +82,34 @@ UserSchema.method({
       tokens: this.tokens,
     };
   },
-  /**/
-  pay(quantity) {
-    if (this.tokens >= quantity) {
-      this.tokens = this.tokens - quantity;
-      return (this.tokens);
+  async depositCylinder(cylinder) {
+    try {
+      console.log("Depositting :", cylinder._id);
+      console.log("CREATING EVENT");
+      //TODO add event to user await this.udpate({});
+    } catch (e) {
+      return (new APIError(e, httpStatus.BAD_REQUEST));
     }
-    else
-      return (-1);
+  },
+  async purchaseCylinder(cylinder) {
+    try {
+      if (this.tokens >= 1) {
+        await this.update({ tokens: this.tokens - 1 });
+        return (this.tokens - 1);
+      } else {
+        return (new APIError('Insufficient tokens', httpStatus.BAD_REQUEST));
+      }
+    } catch (e) {
+      return (new APIError(e, httpStatus.BAD_REQUEST));
+    }
+  },
+  async purchaseTokens(quantity) {
+    try {
+      await this.update({ tokens: this.tokens + quantity });
+      return (this.tokens + quantity);
+    } catch (e) {
+      return (new APIError(e, httpStatus.BAD_REQUEST));
+    }
   }
 });
 

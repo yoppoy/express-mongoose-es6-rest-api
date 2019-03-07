@@ -24,18 +24,25 @@ module.exports = {
       userId: Joi.string().hex().required()
     }
   },
+  // INVENTORY
+  purchaseTokens: {
+    body: {
+      quantity: Joi.number().required
+    }
+  },
   // LOCKER VALIDATION
   createLocker: {
     body: {
-      bluetoothAddress: Joi.string().required(),
+      bluetoothAddress: Joi.array().min(6).max(6).required(),
       bluetoothPassword: Joi.string().min(6).max(6).required()
     }
   },
   updateLocker: {
     body: {
-      bluetoothAddress: Joi.string().required(),
+      bluetoothAddress: Joi.array().min(6).max(6).required(),
       bluetoothPassword: Joi.string().min(6).max(6).required(),
-      state: Joi.string().valid(Object.values(lockerState)).required()
+      state: Joi.string().valid(Object.values(lockerState)).required(),
+      content: Joi.string().required(),
     }
   },
   // CYLINDER VALIDATION
