@@ -1,8 +1,8 @@
 const express = require('express');
 const validate = require('express-validation');
-const paramValidation = require('../../config/param-validation');
+const paramValidation = require('../../../config/param-validation');
 const lockerCtrl = require('./locker.controller');
-const { auth } = require('../helpers/auth');
+const { auth } = require('../../auth/auth.helper');
 const router = express.Router(); // eslint-disable-line new-cap
 
 router.route('/')

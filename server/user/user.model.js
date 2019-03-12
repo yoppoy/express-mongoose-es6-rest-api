@@ -5,6 +5,8 @@ const APIError = require('../helpers/APIError');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../../config/config');
+const Event = require('../smartlocker/event/event.model');
+const {eventType} = require('../smartlocker/event/event.helper');
 
 /**
  * User Schema
@@ -23,12 +25,13 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'basic'
   },
-  cylinders: {
-    type: [String]
-  },
-  tokens: {
-    type: Number,
-    default: 0
+  inventory: {
+    type: Object,
+    default: {
+      tokens: 0,
+      withdrawn: [],
+      deposited: []
+    }
   },
   createdAt: {
     type: Date,
@@ -79,37 +82,51 @@ UserSchema.method({
       _id: this._id,
       email: this.email,
       scope: this.scope,
-      tokens: this.tokens,
+      tokens: this.inventory.tokens,
     };
   },
-  async depositCylinder(cylinder) {
-    try {
-      console.log("Depositting :", cylinder._id);
-      console.log("CREATING EVENT");
-      //TODO add event to user await this.udpate({});
-    } catch (e) {
-      return (new APIError(e, httpStatus.BAD_REQUEST));
-    }
-  },
-  async purchaseCylinder(cylinder) {
-    try {
-      if (this.tokens >= 1) {
-        await this.update({ tokens: this.tokens - 1 });
-        return (this.tokens - 1);
-      } else {
-        return (new APIError('Insufficient tokens', httpStatus.BAD_REQUEST));
+  async depositCylinder(cylinder, locker) {
+    await locker.close(cylinder);
+    await this.update({
+      inventory: {
+        ...this.inventory,
+        ...{
+          deposited: [...this.inventory.deposited, cylinder._id]
+        }
       }
-    } catch (e) {
-      return (new APIError(e, httpStatus.BAD_REQUEST));
+    });
+    await Event.create(eventType.deposit, this._id, {
+      cylinderId: cylinder._id,
+      lockerId: locker._id
+    });
+  },
+  async withdrawCylinder(locker) {
+    let cylinderId;
+
+    if (this.inventory.tokens >= 1) {
+      cylinderId = await locker.open();
+      await this.update({
+        inventory: {
+          ...this.inventory,
+          ...{
+            tokens: this.inventory.tokens - 1,
+            withdrawn: [...this.inventory.withdrawn, cylinderId]
+          }
+        }
+      });
+      await Event.create(eventType.withdraw, this._id, {
+        cylinderId
+      });
+    } else {
+      throw ('Insufficient tokens');
     }
   },
   async purchaseTokens(quantity) {
-    try {
-      await this.update({ tokens: this.tokens + quantity });
-      return (this.tokens + quantity);
-    } catch (e) {
-      return (new APIError(e, httpStatus.BAD_REQUEST));
-    }
+    await this.update({ inventory: {
+        ...this.inventory,
+        ...{tokens: this.inventory.tokens + quantity }
+    }});
+    return (this.inventory.tokens + quantity);
   }
 });
 

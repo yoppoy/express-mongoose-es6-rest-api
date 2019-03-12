@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const lockerState = require('../server/helpers/locker').state;
+const lockerState = require('../server/smartlocker/locker/locker.helper').state;
 
 module.exports = {
   // LOGIN VALIDATION

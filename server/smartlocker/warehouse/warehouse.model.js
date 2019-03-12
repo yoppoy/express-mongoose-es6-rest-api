@@ -1,8 +1,8 @@
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
-const APIError = require('../helpers/APIError');
-const User = require('../user/user.model');
+const APIError = require('../../helpers/APIError');
+const User = require('../../user/user.model');
 
 /**
  * Warehouse Schema

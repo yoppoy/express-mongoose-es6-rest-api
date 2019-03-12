@@ -1,8 +1,8 @@
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
-const APIError = require('../helpers/APIError');
-const lockerState = require('../helpers/locker').state;
+const APIError = require('../../helpers/APIError');
+const lockerState = require('./locker.helper').state;
 
 /**
  * Locker Schema

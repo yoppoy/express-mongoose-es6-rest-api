@@ -1,9 +1,9 @@
 const httpStatus = require('http-status');
-const APIError = require('../helpers/APIError');
+const APIError = require('../../helpers/APIError');
 const Locker = require('./locker.model');
-const lockerState = require('../helpers/locker').state;
-const User = require('../user/user.model');
-const Cylinder = require('../inventory/cylinder.model');
+const lockerState = require('./locker.helper').state;
+const User = require('../../user/user.model');
+const Cylinder = require('../cylinder/cylinder.model');
 
 /**
  * Load locker and append to req.
@@ -49,20 +49,14 @@ const create = async (req, res, next) => {
 const withdrawCylinder = async (req, res, next) => {
   try {
     let locker;
-    let tokensLeft;
-    let cylinderId;
     let user = await User.get(req.jwt.id);
 
-    if (user.tokens > 0) {
+    if (user.inventory.tokens > 0) {
       locker = await Locker.get(req.body.lockerId);
-      tokensLeft = await user.purchaseCylinder(1);
-      if (tokensLeft >= 0) {
-        cylinderId = await locker.open();
-        res.json({ cylinderId });
-      }
-      else {
-        next(new APIError('Insufficient tokens', httpStatus.BAD_REQUEST));
-      }
+      console.log('about to withdraw');
+      await user.withdrawCylinder(locker);
+      console.log('done withdraw');
+      res.json(httpStatus.OK);
     }
     else {
       next(new APIError('Insufficient tokens', httpStatus.BAD_REQUEST));
@@ -85,14 +79,13 @@ const depositCylinder = async (req, res, next) => {
   try {
     user = await User.get(req.jwt.id);
     locker = await Locker.get(req.body.lockerId);
-
     if (locker.state === lockerState.closed) {
       next(new APIError('Locker already contains something', httpStatus.BAD_REQUEST));
     }
     cylinder = await Cylinder.findOneOrCreate(req.body.cylinderId);
-    console.log("Find one or create : ", cylinder);
-    await user.depositCylinder(cylinder);
-    await locker.close(cylinder);
+    console.log('about to deposit');
+    await user.depositCylinder(cylinder, locker);
+    console.log('done depositting');
     res.json(httpStatus.OK);
   } catch (e) {
     next(e);

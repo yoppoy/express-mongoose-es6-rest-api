@@ -1,8 +1,7 @@
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
-const APIError = require('../helpers/APIError');
-const User = require('../user/user.model');
+const APIError = require('../../helpers/APIError');
 
 /**
  * Event Schema
@@ -60,15 +59,23 @@ EventSchema.statics = {
   },
 
   create(type, user, data) {
-    const event = new EventSchema({
+    const event = new this({
       type, user, data
     });
-    return event.save();
+
+    return new Promise((resolve, reject) => {
+      event.save((err) => {
+        if (err) {
+          reject(err);
+        }
+        resolve();
+      });
+    });
   },
   /**
-   * List events in descending order of 'createdAt' timestamp.
-   * @param {number} skip - Number of events to be skipped.
-   * @param {number} limit - Limit number of events to be returned.
+   * List event in descending order of 'createdAt' timestamp.
+   * @param {number} skip - Number of event to be skipped.
+   * @param {number} limit - Limit number of event to be returned.
    * @returns {Promise<Event[]>}
    */
   list({ skip = 0, limit = 50 } = {}) {

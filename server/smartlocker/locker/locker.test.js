@@ -2,14 +2,16 @@ const request = require('supertest-as-promised');
 const httpStatus = require('http-status');
 const chai = require('chai'); // eslint-disable-line import/newline-after-import
 const expect = chai.expect;
-const app = require('../../index');
+const app = require('../../..');
 const mongoose = require('mongoose');
-const config = require('../../config/config');
+const config = require('../../../config/config');
 const jwt = require('jsonwebtoken');
-const User = require('../user/user.model');
-const Cylinder = require('../inventory/cylinder.model');
-const Locker = require('../locker/locker.model');
-const lockerState = require('../helpers/locker').state;
+const User = require('../../user/user.model');
+const Cylinder = require('../cylinder/cylinder.model');
+const Event = require('../event/event.model');
+const { eventType } = require('../event/event.helper');
+const Locker = require('./locker.model');
+const lockerState = require('./locker.helper').state;
 
 chai.config.includeStack = true;
 
@@ -19,11 +21,17 @@ chai.config.includeStack = true;
 after((done) => {
   mongoose.models = {};
   mongoose.modelSchemas = {};
-  mongoose.connection.db.dropDatabase();
+  //mongoose.connection.db.dropDatabase();
   mongoose.connection.close();
   done();
 });
 
+before((done) => {
+  mongoose.connection.once('connected', () => {
+    mongoose.connection.db.dropDatabase();
+  });
+  done();
+});
 describe('## Locker testing', () => {
   const cylinderBarcode = 'B6700a';
   let cylinderId;
@@ -172,6 +180,15 @@ describe('## Locker testing', () => {
               done();
             });
         });
+    });
+
+    it('2 events were created', (done) => {
+      Event.list().then((events) => {
+        expect(events.length).to.equal(2);
+        expect(events[0].type).to.equal(eventType.deposit);
+        expect(events[1].type).to.equal(eventType.withdraw);
+        done();
+      });
     });
 
     it('normal users shouldn\'t be able create/list/update/delete a new locker', (done) => {
