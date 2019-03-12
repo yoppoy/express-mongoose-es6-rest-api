@@ -20,11 +20,8 @@ const EventSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  location: {
-    type: [Number]
-  },
-  values: {
-    type: [String]
+  data: {
+    type: Object
   }
 });
 
@@ -62,6 +59,12 @@ EventSchema.statics = {
       });
   },
 
+  create(type, user, data) {
+    const event = new EventSchema({
+      type, user, data
+    });
+    return event.save();
+  },
   /**
    * List events in descending order of 'createdAt' timestamp.
    * @param {number} skip - Number of events to be skipped.
