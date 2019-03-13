@@ -25,13 +25,12 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'basic'
   },
-  inventory: {
-    type: Object,
-    default: {
-      tokens: 0,
-      withdrawn: [],
-      deposited: []
-    }
+  tokens: {
+    type: Number,
+    default: 0
+  },
+  cylinders:{
+    type: [mongoose.Schema.Types.ObjectId]
   },
   createdAt: {
     type: Date,
@@ -82,19 +81,11 @@ UserSchema.method({
       _id: this._id,
       email: this.email,
       scope: this.scope,
-      tokens: this.inventory.tokens,
+      tokens: this.tokens,
     };
   },
   async depositCylinder(cylinder, locker) {
     await locker.close(cylinder);
-    await this.update({
-      inventory: {
-        ...this.inventory,
-        ...{
-          deposited: [...this.inventory.deposited, cylinder._id]
-        }
-      }
-    });
     await Event.create(eventType.deposit, this._id, {
       cylinderId: cylinder._id,
       lockerId: locker._id
@@ -103,17 +94,9 @@ UserSchema.method({
   async withdrawCylinder(locker) {
     let cylinderId;
 
-    if (this.inventory.tokens >= 1) {
+    if (this.tokens >= 1) {
       cylinderId = await locker.open();
-      await this.update({
-        inventory: {
-          ...this.inventory,
-          ...{
-            tokens: this.inventory.tokens - 1,
-            withdrawn: [...this.inventory.withdrawn, cylinderId]
-          }
-        }
-      });
+      await this.update({ tokens: this.tokens - 1, cylinders: [...this.cylinders, cylinderId] });
       await Event.create(eventType.withdraw, this._id, {
         cylinderId
       });
@@ -122,11 +105,10 @@ UserSchema.method({
     }
   },
   async purchaseTokens(quantity) {
-    await this.update({ inventory: {
-        ...this.inventory,
-        ...{tokens: this.inventory.tokens + quantity }
-    }});
-    return (this.inventory.tokens + quantity);
+    await this.update({
+      tokens: this.tokens + quantity
+    });
+    return (this.tokens + quantity);
   }
 });
 

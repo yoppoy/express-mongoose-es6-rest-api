@@ -51,7 +51,7 @@ const withdrawCylinder = async (req, res, next) => {
     let locker;
     let user = await User.get(req.jwt.id);
 
-    if (user.inventory.tokens > 0) {
+    if (user.tokens > 0) {
       locker = await Locker.get(req.body.lockerId);
       console.log('about to withdraw');
       await user.withdrawCylinder(locker);

@@ -182,6 +182,16 @@ describe('## Locker testing', () => {
         });
     });
 
+    it('user has one cylinder in his inventory', (done) => {
+      let cylinders;
+
+      User.get(user._id).then((userInfo) => {
+        cylinders = userInfo.cylinders.toObject();
+        expect(cylinders.length).to.equal(1);
+        done();
+      }).catch(e => console.log(e));
+    });
+
     it('2 events were created', (done) => {
       Event.list().then((events) => {
         expect(events.length).to.equal(2);
