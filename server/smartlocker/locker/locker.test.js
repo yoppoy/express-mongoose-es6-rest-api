@@ -182,12 +182,13 @@ describe('## Locker testing', () => {
         });
     });
 
-    it('user has one cylinder in his inventory', (done) => {
+    it('user has one cylinder in his inventory and 0 tokens left', (done) => {
       let cylinders;
 
       User.get(user._id).then((userInfo) => {
         cylinders = userInfo.cylinders.toObject();
         expect(cylinders.length).to.equal(1);
+        expect(userInfo.tokens).to.equal(0);
         done();
       }).catch(e => console.log(e));
     });
